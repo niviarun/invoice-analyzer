@@ -3,7 +3,7 @@
   "States": {
     "StartTextractJob": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:us-west-1:123456789012:function:start-textract-expense-dev",
+      "Resource": "start-textract-expense-dev-arn",
       "Parameters": {
         "action": "START",
         "s3_key.$": "$.s3_key",
@@ -29,7 +29,7 @@
     },
     "CheckJobStatus": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:us-west-1:123456789012:function:start-textract-expense-dev",
+      "Resource": "tart-textract-expense-dev-arn",
       "Parameters": {
         "action": "CHECK",
         "JobId.$": "$.start.JobId"
@@ -82,7 +82,7 @@
     },
     "ExtractFinalJSON": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:us-west-1:123456789012:function:process-textract-expense-dev",
+      "Resource": "process-textract-expense-dev-arn",
       "Parameters": {
         "JobId.$": "$.start.JobId"
       },
@@ -100,7 +100,7 @@
     },
     "LogToGoogleSheets": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:us-west-1:123456789012:function:invoice-logger-sheets",
+      "Resource": "invoice-logger-sheets-arn",
       "Parameters": {
         "s3_key.$": "$.s3_key",
         "bucket.$": "$.bucket",
