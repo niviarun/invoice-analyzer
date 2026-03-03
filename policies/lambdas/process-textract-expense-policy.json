@@ -1,0 +1,33 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "CloudWatchLogs",
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "GetTextractExpenseAnalysis",
+      "Effect": "Allow",
+      "Action": [
+        "textract:GetExpenseAnalysis"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "WriteOutputsToS3",
+      "Effect": "Allow",
+      "Action": [
+        "s3:PutObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::your-invoice-bucket/processed/*"
+      ]
+    }
+  ]
+}

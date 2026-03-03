@@ -1,0 +1,123 @@
+{
+  "StartAt": "StartTextractJob",
+  "States": {
+    "StartTextractJob": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-west-1:123456789012:function:start-textract-expense-dev",
+      "Parameters": {
+        "action": "START",
+        "s3_key.$": "$.s3_key",
+        "bucket.$": "$.bucket"
+      },
+      "ResultPath": "$.start",
+      "Next": "InitPoll"
+    },
+    "InitPoll": {
+      "Type": "Pass",
+      "Parameters": {
+        "s3_key.$": "$.s3_key",
+        "bucket.$": "$.bucket",
+        "start.$": "$.start",
+        "attempt": 0
+      },
+      "Next": "Wait10Seconds"
+    },
+    "Wait10Seconds": {
+      "Type": "Wait",
+      "Seconds": 10,
+      "Next": "CheckJobStatus"
+    },
+    "CheckJobStatus": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-west-1:123456789012:function:start-textract-expense-dev",
+      "Parameters": {
+        "action": "CHECK",
+        "JobId.$": "$.start.JobId"
+      },
+      "ResultPath": "$.check",
+      "Next": "IsJobDone?"
+    },
+    "IsJobDone?": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.check.Status",
+          "StringEquals": "SUCCEEDED",
+          "Next": "ExtractFinalJSON"
+        },
+        {
+          "Variable": "$.check.Status",
+          "StringEquals": "PARTIAL_SUCCESS",
+          "Next": "ExtractFinalJSON"
+        },
+        {
+          "Variable": "$.check.Status",
+          "StringEquals": "FAILED",
+          "Next": "HandleFailure"
+        }
+      ],
+      "Default": "BumpAttempt"
+    },
+    "BumpAttempt": {
+      "Type": "Pass",
+      "Parameters": {
+        "s3_key.$": "$.s3_key",
+        "bucket.$": "$.bucket",
+        "start.$": "$.start",
+        "check.$": "$.check",
+        "attempt.$": "States.MathAdd($.attempt, 1)"
+      },
+      "Next": "TooManyAttempts?"
+    },
+    "TooManyAttempts?": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.attempt",
+          "NumericGreaterThanEquals": 90,
+          "Next": "HandleTimeout"
+        }
+      ],
+      "Default": "Wait10Seconds"
+    },
+    "ExtractFinalJSON": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-west-1:123456789012:function:process-textract-expense-dev",
+      "Parameters": {
+        "JobId.$": "$.start.JobId"
+      },
+      "ResultPath": "$.result",
+      "Next": "SAPMatchLogic"
+    },
+    "SAPMatchLogic": {
+      "Type": "Pass",
+      "Result": {
+        "category": "3-WAY MATCH",
+        "details": "MOCK SUCCESS: Found PO 45000123 and Goods Receipt in SAP"
+      },
+      "ResultPath": "$.match_results",
+      "Next": "LogToGoogleSheets"
+    },
+    "LogToGoogleSheets": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-west-1:123456789012:function:invoice-logger-sheets",
+      "Parameters": {
+        "s3_key.$": "$.s3_key",
+        "bucket.$": "$.bucket",
+        "result.$": "$.result",
+        "match_results.$": "$.match_results"
+      },
+      "End": true
+    },
+    "HandleFailure": {
+      "Type": "Fail",
+      "Error": "TextractFailure",
+      "Cause": "Textract job failed to process the document."
+    },
+    "HandleTimeout": {
+      "Type": "Fail",
+      "Error": "TextractTimeout",
+      "Cause": "Textract job did not complete within the polling limit."
+    }
+  }
+}
