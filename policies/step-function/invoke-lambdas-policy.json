@@ -7,9 +7,9 @@
         "lambda:InvokeFunction"
       ],
       "Resource": [
-        "arn:aws:lambda:us-west-1:123456789012:function:start-textract-expense-dev:*",
-        "arn:aws:lambda:us-west-1:123456789012:function:process-textract-expense-dev:*",
-        "arn:aws:lambda:us-west-1:123456789012:function:invoice-logger-sheets:*"
+        "arn-start-textract-expense-dev:*",
+        "arn-process-textract-expense-dev:*",
+        "arn-function:invoice-logger-sheets:*"
       ]
     },
     {
@@ -18,9 +18,9 @@
         "lambda:InvokeFunction"
       ],
       "Resource": [
-        "arn:aws:lambda:us-west-1:123456789012:function:start-textract-expense-dev",
-        "arn:aws:lambda:us-west-1:123456789012:function:process-textract-expense-dev",
-        "arn:aws:lambda:us-west-1:123456789012:function:invoice-logger-sheets"
+        "arn-start-textract-expense-dev",
+        "arn-process-textract-expense-dev",
+        "arn-invoice-logger-sheets"
       ]
     }
   ]
